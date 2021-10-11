@@ -17,7 +17,7 @@ namespace Logging.Core
 
         internal Log()
         {
-            Manage.CreateDirectories();
+            Logs.Add(Info.DefaultLogType, new());
             LogThread = new Thread(LogMethod);
             LogThread.Start();
         }
@@ -33,14 +33,46 @@ namespace Logging.Core
                 SaveLogs();
                 Thread.Sleep(Info.LogThreadSleep);
             }
+            SaveLogs();
         }       
         private string GetLogsFullFileName(string logType)
         {
             return Path.Combine(Manage.GetLogsFolder(), logType, FileName);
         }
+
+        private bool SaveLogs(string logType, List<string> logs)
+        {
+            try
+            {
+                if (!Directory.Exists(Manage.GetLogsFullPath(logType)))
+                    Directory.CreateDirectory(Manage.GetLogsFullPath(logType));
+                File.AppendAllLines(GetLogsFullFileName(logType), logs, Encoding.UTF8);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Add($"Catch an exeption {ex.Message} while saving logs", Info.DefaultLogType, LogLevel.Fatal);
+                return false;
+            }
+        }
         #endregion
 
         #region Public
+        public bool CreateLogType(string logType)
+        {
+            if (Logs.ContainsKey(logType))
+                return false;
+            Logs.Add(logType, new());
+            return true;
+        }
+        public bool DeleteLogType(string logType)
+        {
+            if (!Logs.ContainsKey(logType))
+                return false;
+            lock (Logs[logType])
+                Logs.Remove(logType);
+            return true;
+        }
         public void Add(string message, string logType, LogLevel logLevel)
         {
             Action.Main.Manage.Manager.ExecuteEvent<IEventHandlerLog>(new LogEvent(message, logType, logLevel));
@@ -50,7 +82,7 @@ namespace Logging.Core
             {
                 if (!Logs.ContainsKey(Info.DefaultLogType))
                 {
-                    Logs.Add(Info.DefaultFolderName, new() { Manage.ConstructStringLog($"{Logs} missed {nameof(Info.DefaultLogType)} - {Info.DefaultLogType}", LogLevel.Fatal) });
+                    Logs.Add(Info.DefaultLogType, new() { Manage.ConstructStringLog($"{Logs} missed {nameof(Info.DefaultLogType)} - {Info.DefaultLogType}", LogLevel.Fatal) });
                     return;
                 }
                 Add($"Failed to add log {message} with {nameof(LogLevel)} {logLevel}", Info.DefaultLogType, LogLevel.Error);
@@ -64,13 +96,17 @@ namespace Logging.Core
             if (!Info.ShouldLog)
                 return;
             foreach (KeyValuePair<string, List<string>> keyValuePair in Logs)
-            {
+{
+                if (Manage.IsUsedByAnotherProcess(GetLogsFullFileName(keyValuePair.Key)))
+                    continue;
                 List<string> TempLogs = new();
                 lock (Logs[keyValuePair.Key])
                     TempLogs.AddRange(Logs[keyValuePair.Key]);
                 if (TempLogs.Count > 0)
-                    File.AppendAllLines(GetLogsFullFileName(keyValuePair.Key), TempLogs, Encoding.UTF8);
-                Logs[keyValuePair.Key].RemoveRange(0, TempLogs.Count);
+                {
+                    if (SaveLogs(keyValuePair.Key, TempLogs))
+                        Logs[keyValuePair.Key].RemoveRange(0, TempLogs.Count);
+                }
             }
         }
         #endregion
