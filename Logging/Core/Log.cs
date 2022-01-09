@@ -91,6 +91,14 @@ namespace Logging.Core
             lock (Logs[logType])
                 Logs[logType].Add(Manage.ConstructStringLog(message, logLevel));
         }
+        public void Add(string message, LogLevel logLevel)
+        {
+            Action.Main.Manage.Manager.ExecuteEvent<IEventHandlerLog>(new LogEvent(message, Info.DefaultLogType, logLevel));
+            if (!Info.ShouldLog)
+                return;
+            lock (Logs[Info.DefaultLogType])
+                Logs[Info.DefaultLogType].Add(Manage.ConstructStringLog(message, logLevel));
+        }
         public void SaveLogs()
         {
             if (!Info.ShouldLog)
