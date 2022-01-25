@@ -1,9 +1,22 @@
-﻿using Action.Core;
+﻿using System.Collections.Generic;
+using System;
+using Action.Events;
+using Action.Handlers;
 
 namespace Action.Main
 {
-    public static class Manage
+    public class Manage
     {
-        public static Manager Manager { get; set; } = new Manager();
-    }
+        public static Manage ManageInstance { get; private set; } = new();
+        public Info Info { get; private set; } = new();
+		internal Dictionary<Type, List<IEventHandler>> Events { get; private set; } = new();
+
+		public void ExecuteEvent<T>(Event @event) where T : IEventHandler
+		{
+			if (!Info.ShouldExecuteEvent || !Events.ContainsKey(typeof(T)))
+				return;
+			foreach (IEventHandler eventHandler in Events[typeof(T)])
+				@event.Execute(eventHandler);
+		}
+	}
 }

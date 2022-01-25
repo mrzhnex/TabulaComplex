@@ -1,31 +1,38 @@
-﻿using System.Globalization;
-using System;
+﻿using System;
 using System.IO;
-using Logging.Core;
+using Logging.Basis;
+using Logging.Events;
+using Logging.Handlers;
 
 namespace Logging.Main
 {
-    public static class Manage
+    public class Manage
     {
-        public static Log Log { get; set; } = new Log();
-        public static string GetLogsFolder()
+        public static Manage ManageInstance { get; private set; } = new();
+        public Info Info { get; private set; } = new();
+        public Log Log { get; private set; } = new();
+
+        public string GetLogsFolder()
         {
             return Path.Combine(Info.DefaultFolderPath, Info.DefaultApplicationName, Info.DefaultFolderName);
         }
-        internal static string GetLogsFullPath(string logType)
+        internal string GetLogsFullPath(string logType)
         {
             return Path.Combine(GetLogsFolder(), logType);
         }
-        internal static string ConstructStringLog(string message, LogLevel logLevel)
-        {
-            return $"[{logLevel}][{DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)}]:{message}";
-        }
-        internal static bool IsUsedByAnotherProcess(string filePath)
+        public bool IsUsedByAnotherProcess(string filePath)
         {
             if (!File.Exists(filePath))
                 return false;
-            try { using Stream stream = new FileStream(filePath, FileMode.Open); }
-            catch { return true; }
+            try
+            {
+                using Stream stream = new FileStream(filePath, FileMode.Open);
+            }
+            catch (Exception exception)
+            {
+                Action.Main.Manage.ManageInstance.ExecuteEvent<IEventHandlerCatchAnException>(new CatchAnExceptionEvent(nameof(IsUsedByAnotherProcess), exception, LogLevel.Debug));
+                return true;
+            }
             return false;
         }
     }

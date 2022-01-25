@@ -2,11 +2,11 @@
 
 namespace Action.Events
 {
-    public class ApplicationShutdownEvent : Event
+    public class ApplicationStartEvent : Event
     {
         public override void Execute(IEventHandler eventHandler)
         {
-            ((IEventHandlerApplicationShutdown)eventHandler).OnApplicationShutdown(this);
+            ((IEventHandlerApplicationStart)eventHandler).OnApplicationStart(this);
         }
     }
 }

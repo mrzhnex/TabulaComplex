@@ -1,7 +1,7 @@
 ﻿namespace Action.Main
 {
-    public static class Info
+    public class Info
     {
-        public static bool ExecuteEvent { get; set; } = true;
+        public bool ShouldExecuteEvent { get; set; } = true;
     }
 }

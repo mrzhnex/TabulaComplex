@@ -1,15 +1,18 @@
 ﻿using System;
+using System.Text;
 
 namespace Logging.Main
 {
-    public static class Info
+    public class Info
     {
-        public static bool ActiveLog { get; set; } = true;
-        public static int LogThreadSleep { get; set; } = 5000;
-        public static bool ShouldLog { get; set; } = true;
-        public static string DefaultFolderName { get; set; } = "Logs";
-        public static string DefaultFolderPath { get; set; } = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-        public static string DefaultLogType { get; set; } = "Application";
-        public static string DefaultApplicationName { get; set; } = "TabulaComplex";
+        public const string DefaultLogType = "Application";
+        public string FileExtension { get; set; } = "log";
+        public bool ActiveLog { get; set; } = true;
+        public int LogThreadSleep { get; set; } = 5000;
+        public bool ShouldLog { get; set; } = true;
+        public string DefaultFolderName { get; set; } = "Logs";
+        public string DefaultFolderPath { get; set; } = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+        public string DefaultApplicationName { get; set; } = "TabulaComplex";
+        public Encoding Encoding { get; set; } = Encoding.UTF8;
     }
 }
