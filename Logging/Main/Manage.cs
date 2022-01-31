@@ -11,6 +11,7 @@ namespace Logging.Main
         public static Manage ManageInstance { get; private set; } = new();
         public Info Info { get; private set; } = new();
         public Log Log { get; private set; } = new();
+        public Application Application { get; private set; } = new();
 
         public string GetLogsFolder()
         {
