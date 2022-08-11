@@ -18,5 +18,13 @@ namespace Action.Main
 			foreach (IEventHandler eventHandler in Events[typeof(T)])
 				@event.Execute(eventHandler);
 		}
+		public void RegisterAllEvents(IEventHandler eventHandler)
+        {
+			foreach (Type type in eventHandler.GetType().GetInterfaces())
+			{
+				if (typeof(IEventHandler).IsAssignableFrom(type) && !Events.ContainsKey(type))
+					Events.Add(type, new List<IEventHandler>() { eventHandler });
+			}
+		}
 	}
 }
