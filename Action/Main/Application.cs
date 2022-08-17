@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System;
+﻿using System;
 using Action.Handlers;
 
 namespace Action.Main
@@ -8,16 +7,16 @@ namespace Action.Main
 	{
 		public Application()
         {
-			RegisterAll(this);
-        }
-
-		protected void RegisterAll(IEventHandler eventHandler)
-		{
-			foreach (Type type in eventHandler.GetType().GetInterfaces())
+			foreach (Type type in GetType().GetInterfaces())
 			{
-				if (typeof(IEventHandler).IsAssignableFrom(type) && !Manage.ManageInstance.Events.ContainsKey(type))
-					Manage.ManageInstance.Events.Add(type, new List<IEventHandler>() { eventHandler });
+				if (typeof(IEventHandler).IsAssignableFrom(type))
+				{
+					if (Manage.ManageInstance.Events.ContainsKey(type))
+						Manage.ManageInstance.Events[type].Add(this);
+					else
+						Manage.ManageInstance.Events.Add(type, new() { this });
+				}
 			}
-		}
+        }
 	}
 }

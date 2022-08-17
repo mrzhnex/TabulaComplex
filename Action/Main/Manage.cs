@@ -22,8 +22,13 @@ namespace Action.Main
         {
 			foreach (Type type in eventHandler.GetType().GetInterfaces())
 			{
-				if (typeof(IEventHandler).IsAssignableFrom(type) && !Events.ContainsKey(type))
-					Events.Add(type, new List<IEventHandler>() { eventHandler });
+				if (typeof(IEventHandler).IsAssignableFrom(type))
+                {
+					if (Events.ContainsKey(type))
+						Events[type].Add(eventHandler);
+					else
+						Events.Add(type, new() { eventHandler });
+				}
 			}
 		}
 	}
